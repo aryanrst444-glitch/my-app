@@ -1,0 +1,74 @@
+App.html
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Account Manager</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, button { margin: 5px 0; padding: 8px; width: 100%; }
+.account { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+</style>
+</head>
+
+<body>
+
+<h2>Account Manager</h2>
+
+<input id="name" placeholder="Name (Binance, Gmail)">
+<input id="username" placeholder="Email / Username">
+<input id="password" placeholder="Password">
+<input id="note" placeholder="Note">
+
+<button onclick="addAccount()">Add Account</button>
+
+<h3>Accounts:</h3>
+<div id="list"></div>
+
+<script>
+let accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+
+function saveData() {
+    localStorage.setItem("accounts", JSON.stringify(accounts));
+}
+
+function render() {
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+    accounts.forEach(acc => {
+        let div = document.createElement("div");
+        div.className = "account";
+        div.innerHTML = `
+            <b>${acc.name}</b><br>
+            ${acc.username}<br>
+            🔒 ${acc.password}<br>
+            📝 ${acc.note}
+        `;
+        list.appendChild(div);
+    });
+}
+
+function addAccount() {
+    let account = {
+        name: document.getElementById("name").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        note: document.getElementById("note").value
+    };
+
+    accounts.push(account);
+    saveData();
+    render();
+
+    document.getElementById("name").value = "";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("note").value = "";
+}
+
+render();
+</script>
+
+</body>
+</html>
