@@ -1,70 +1,137 @@
-App.html
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Account Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Vault</title>
+
 <style>
-body { font-family: Arial; padding: 20px; }
-input, button { margin: 5px 0; padding: 8px; width: 100%; }
-.account { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont;
+  background: #f2f4f7;
+  margin: 0;
+}
+
+.container {
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 15px;
+}
+
+.search {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 20px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.add-btn {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background: #007aff;
+  color: white;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  font-size: 30px;
+  border: none;
+}
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #ddd;
+}
+
+.tab {
+  font-size: 12px;
+  text-align: center;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Account Manager</h2>
+<div class="container">
+  <h1>My Vault</h1>
 
-<input id="name" placeholder="Name (Binance, Gmail)">
-<input id="username" placeholder="Email / Username">
-<input id="password" placeholder="Password">
-<input id="note" placeholder="Note">
+  <input class="search" placeholder="Search">
 
-<button onclick="addAccount()">Add Account</button>
+  <!-- Folder Section -->
+  <div class="section">
+    <h3>Folders</h3>
+    <div id="folders"></div>
+  </div>
 
-<h3>Accounts:</h3>
-<div id="list"></div>
+  <!-- No Folder -->
+  <div class="section">
+    <h3>No Folder</h3>
+    <div id="noFolder"> (Empty) </div>
+  </div>
+</div>
+
+<button class="add-btn" onclick="addFolder()">+</button>
+
+<div class="tabbar">
+  <div class="tab">My vault</div>
+  <div class="tab">Tree</div>
+  <div class="tab">Generator</div>
+  <div class="tab">Settings</div>
+</div>
 
 <script>
-let accounts = JSON.parse(localStorage.getItem("accounts")) || [];
-
-function saveData() {
-    localStorage.setItem("accounts", JSON.stringify(accounts));
-}
+let folders = JSON.parse(localStorage.getItem("folders")) || [];
 
 function render() {
-    let list = document.getElementById("list");
-    list.innerHTML = "";
-    accounts.forEach(acc => {
-        let div = document.createElement("div");
-        div.className = "account";
-        div.innerHTML = `
-            <b>${acc.name}</b><br>
-            ${acc.username}<br>
-            🔒 ${acc.password}<br>
-            📝 ${acc.note}
-        `;
-        list.appendChild(div);
-    });
+  let container = document.getElementById("folders");
+  container.innerHTML = "";
+
+  folders.forEach((f, i) => {
+    let div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      ${f}
+      <button onclick="deleteFolder(${i})">❌</button>
+    `;
+    container.appendChild(div);
+  });
+
+  localStorage.setItem("folders", JSON.stringify(folders));
 }
 
-function addAccount() {
-    let account = {
-        name: document.getElementById("name").value,
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value,
-        note: document.getElementById("note").value
-    };
-
-    accounts.push(account);
-    saveData();
+function addFolder() {
+  let name = prompt("Folder name:");
+  if (name) {
+    folders.push(name);
     render();
+  }
+}
 
-    document.getElementById("name").value = "";
-    document.getElementById("username").value = "";
-    document.getElementById("password").value = "";
-    document.getElementById("note").value = "";
+function deleteFolder(i) {
+  folders.splice(i, 1);
+  render();
 }
 
 render();
