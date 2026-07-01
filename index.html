@@ -2,138 +2,206 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vault</title>
 
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont;
-  background: #f2f4f7;
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont;
 }
 
-.container {
-  padding: 20px;
+body {
+  background: #0c0c0c;
+  color: white;
+  overflow-x: hidden;
+  touch-action: pan-y;
 }
 
-h1 {
-  margin-bottom: 15px;
-}
-
-.search {
+/* جلوگیری از کش رفتن */
+html, body {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  margin-bottom: 20px;
+  height: 100%;
+  overflow-x: hidden;
 }
 
-.section {
-  margin-bottom: 20px;
-}
-
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 10px;
+/* SEARCH */
+.search-bar {
+  width: 85%;
+  margin: 20px auto;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 12px 16px;
 }
 
+.search-bar span {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 18px;
+  width: 100%;
+}
+
+/* FOLDERS */
+.folder {
+  background: rgba(255,255,255,0.06);
+  margin: 10px 20px;
+  padding: 16px;
+  border-radius: 18px;
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+/* ADD BUTTON */
 .add-btn {
   position: fixed;
-  bottom: 90px;
+  bottom: 110px;
   right: 20px;
+  width: 70px;
+  height: 70px;
   background: #007aff;
-  color: white;
   border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  font-size: 30px;
-  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
 }
 
+/* TAB BAR (Liquid Glass Style) */
 .tabbar {
   position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: white;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 70px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 40px;
   display: flex;
   justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid #ddd;
+  align-items: center;
 }
 
-.tab {
-  font-size: 12px;
-  text-align: center;
+.tabbar div {
+  opacity: 0.7;
+}
+
+.tabbar .active {
+  opacity: 1;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>My Vault</h1>
-
-  <input class="search" placeholder="Search">
-
-  <!-- Folder Section -->
-  <div class="section">
-    <h3>Folders</h3>
-    <div id="folders"></div>
-  </div>
-
-  <!-- No Folder -->
-  <div class="section">
-    <h3>No Folder</h3>
-    <div id="noFolder"> (Empty) </div>
-  </div>
+<div class="search-bar">
+  <span>🔍</span>
+  <input id="search" placeholder="Search">
 </div>
 
-<button class="add-btn" onclick="addFolder()">+</button>
+<div id="folders"></div>
+
+<div class="add-btn" onclick="addFolder()">+</div>
 
 <div class="tabbar">
-  <div class="tab">My vault</div>
-  <div class="tab">Tree</div>
-  <div class="tab">Generator</div>
-  <div class="tab">Settings</div>
+  <div class="active">Home</div>
+  <div>Tree</div>
 </div>
 
 <script>
-let folders = JSON.parse(localStorage.getItem("folders")) || [];
+let folders = [];
 
-function render() {
+function render(list = folders) {
   let container = document.getElementById("folders");
   container.innerHTML = "";
 
-  folders.forEach((f, i) => {
+  list.forEach(f => {
     let div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      ${f}
-      <button onclick="deleteFolder(${i})">❌</button>
-    `;
+    div.className = "folder";
+    div.innerText = f.name;
+    div.onclick = () => openFolder(f.id);
     container.appendChild(div);
   });
-
-  localStorage.setItem("folders", JSON.stringify(folders));
 }
 
 function addFolder() {
   let name = prompt("Folder name:");
-  if (name) {
-    folders.push(name);
-    render();
-  }
-}
+  if (!name) return;
 
-function deleteFolder(i) {
-  folders.splice(i, 1);
+  let folder = {
+    id: Date.now(),
+    name: name,
+    items: []
+  };
+
+  folders.push(folder);
+  save();
   render();
 }
 
+function openFolder(id) {
+  let folder = folders.find(f => f.id === id);
+
+  let username = prompt("Username:");
+  let password = prompt("Password:");
+  let note = prompt("Note:");
+  let key = prompt("Key phrase:");
+
+  folder.items.push({
+    username,
+    password,
+    note,
+    key
+  });
+
+  save();
+}
+
+/* SEARCH (هوشمند) */
+document.getElementById("search").addEventListener("input", function(e) {
+  let val = e.target.value.toLowerCase();
+
+  let result = folders
+    .map(f => {
+      let score = similarity(f.name.toLowerCase(), val);
+      return { ...f, score };
+    })
+    .filter(f => f.score > 0)
+    .sort((a,b) => b.score - a.score);
+
+  render(result);
+});
+
+/* الگوریتم شباهت */
+function similarity(a, b) {
+  if (!b) return 1;
+  if (a.includes(b)) return b.length / a.length;
+  return 0;
+}
+
+/* STORAGE */
+function save() {
+  localStorage.setItem("folders", JSON.stringify(folders));
+}
+
+function load() {
+  let data = localStorage.getItem("folders");
+  if (data) folders = JSON.parse(data);
+}
+
+load();
 render();
 </script>
 
