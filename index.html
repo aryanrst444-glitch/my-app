@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Vault</title>
 
 <style>
@@ -14,9 +15,9 @@ body {
 
 /* HEADER */
 .header {
-  padding: 20px;
-  font-size: 24px;
-  font-weight: bold;
+  padding: 24px 20px 10px;
+  font-size: 32px;
+  font-weight: 700;
 }
 
 /* SEARCH */
@@ -26,10 +27,11 @@ body {
 
 .search input {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 14px;
   border: none;
   background: #e5e7eb;
+  font-size: 14px;
 }
 
 /* SECTION */
@@ -89,9 +91,9 @@ body {
   bottom: 20px;
   left: 20px;
   right: 20px;
-  height: 65px;
+  height: 70px;
   background: white;
-  border-radius: 20px;
+  border-radius: 22px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -100,8 +102,13 @@ body {
 
 .tab {
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   color: #777;
+}
+
+.tab svg {
+  display: block;
+  margin: 0 auto 4px;
 }
 
 .tab.active {
@@ -112,10 +119,10 @@ body {
 
 <body>
 
-<div class="header">My vault</div>
+<div class="header">My Vault</div>
 
 <div class="search">
-  <input placeholder="Search">
+  <input id="searchInput" placeholder="Search..." oninput="render()">
 </div>
 
 <div class="section">
@@ -125,18 +132,42 @@ body {
   <div class="box" id="folders"></div>
 </div>
 
-<div class="section">
-  <div class="section-title">No Folder</div>
-  <div class="box" id="noFolder"></div>
-</div>
-
 <div class="add-btn" onclick="addFolder()">+</div>
 
 <div class="tabbar">
-  <div class="tab active">Vault</div>
-  <div class="tab">Tree</div>
-  <div class="tab">Generator</div>
-  <div class="tab">Settings</div>
+  <div class="tab active">
+    <!-- vault -->
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="7" width="16" height="12" rx="2"/>
+      <circle cx="12" cy="13" r="2"/>
+    </svg>
+    Vault
+  </div>
+
+  <div class="tab">
+    <!-- tree -->
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 3v16M7 8l5-5 5 5M7 16l5 3 5-3"/>
+    </svg>
+    Tree
+  </div>
+
+  <div class="tab">
+    <!-- generator -->
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 12h16M12 4v16"/>
+    </svg>
+    Generator
+  </div>
+
+  <div class="tab">
+    <!-- settings -->
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19 12a7 7 0 0 0-.1-1l2-1-2-3-2 1a7 7 0 0 0-2-1l-.3-2h-4l-.3 2a7 7 0 0 0-2 1l-2-1-2 3 2 1a7 7 0 0 0 0 2l-2 1 2 3 2-1a7 7 0 0 0 2 1l.3 2h4l.3-2a7 7 0 0 0 2-1l2 1 2-3-2-1c.1-.3.1-.7.1-1z"/>
+    </svg>
+    Settings
+  </div>
 </div>
 
 <script>
@@ -144,15 +175,16 @@ let folders = JSON.parse(localStorage.getItem("folders")) || [];
 let dataStore = JSON.parse(localStorage.getItem("dataStore")) || {};
 
 function render() {
+  let search = document.getElementById("searchInput").value.toLowerCase();
   let folderBox = document.getElementById("folders");
-  let noFolderBox = document.getElementById("noFolder");
 
   folderBox.innerHTML = "";
-  noFolderBox.innerHTML = "";
 
-  document.getElementById("folderCount").innerText = folders.length;
+  let filtered = folders.filter(f => f.toLowerCase().includes(search));
 
-  folders.forEach(name => {
+  document.getElementById("folderCount").innerText = filtered.length;
+
+  filtered.forEach(name => {
     let count = (dataStore[name] || []).length;
 
     let row = document.createElement("div");
@@ -165,20 +197,6 @@ function render() {
     `;
 
     folderBox.appendChild(row);
-  });
-
-  let noData = dataStore["noFolder"] || [];
-
-  noData.forEach(item => {
-    let row = document.createElement("div");
-    row.className = "row";
-
-    row.innerHTML = `
-      <span>${item.username || "Item"}</span>
-      <span class="count">•</span>
-    `;
-
-    noFolderBox.appendChild(row);
   });
 
   localStorage.setItem("folders", JSON.stringify(folders));
