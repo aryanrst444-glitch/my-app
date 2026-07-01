@@ -10,7 +10,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont;
   background: #f2f4f7;
   margin: 0;
-  overflow-x: hidden; /* فیکس حرکت چپ راست */
+  overflow-x: hidden; /* FIX SCROLL */
 }
 
 .container {
@@ -21,27 +21,27 @@ h1 {
   margin-bottom: 15px;
 }
 
-/* 🔍 SEARCH BAR */
+/* SEARCH BAR */
 .search-box {
   display: flex;
   align-items: center;
   background: white;
-  border-radius: 16px;
-  padding: 10px 15px;
-  width: 90%;
+  border-radius: 12px;
+  padding: 0 12px;
   margin-bottom: 20px;
+  width: 85%;
 }
 
 .search-box span {
   font-size: 18px;
-  margin-right: 8px;
 }
 
 .search {
   border: none;
   outline: none;
-  font-size: 18px;
-  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  flex: 1;
 }
 
 /* SECTIONS */
@@ -49,51 +49,51 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* CARD */
 .card {
   background: white;
-  border-radius: 18px;
-  padding: 18px;
+  border-radius: 16px;
+  padding: 15px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  cursor: pointer;
 }
 
-/* ➕ BUTTON */
+/* ADD BUTTON */
 .add-btn {
   position: fixed;
-  bottom: 120px;
+  bottom: 110px;
   right: 20px;
   background: #007aff;
   color: white;
   border-radius: 50%;
-  width: 70px;
-  height: 70px;
-  font-size: 36px;
+  width: 65px;
+  height: 65px;
+  font-size: 34px;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* ✨ LIQUID TAB BAR */
+/* TAB BAR */
 .tabbar {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 15px;
   width: 90%;
-  background: rgba(255,255,255,0.8);
+  left: 5%;
+  background: rgba(255,255,255,0.9);
   backdrop-filter: blur(20px);
-  border-radius: 30px;
   display: flex;
   justify-content: space-around;
   padding: 12px 0;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  border-radius: 22px;
+  border: 1px solid #ddd;
 }
 
 .tab {
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
 }
 </style>
@@ -104,7 +104,7 @@ h1 {
 <div class="container">
   <h1>My Vault</h1>
 
-  <!-- 🔍 SEARCH -->
+  <!-- SEARCH -->
   <div class="search-box">
     <span>🔍</span>
     <input class="search" id="search" placeholder="Search" oninput="render()">
@@ -135,7 +135,6 @@ h1 {
 <script>
 let folders = JSON.parse(localStorage.getItem("folders")) || [];
 
-/* 🔍 SEARCH FILTER */
 function render() {
   let container = document.getElementById("folders");
   let searchValue = document.getElementById("search").value.toLowerCase();
@@ -143,36 +142,26 @@ function render() {
   container.innerHTML = "";
 
   let filtered = folders
-    .map(name => ({
-      name,
-      score: similarity(name.toLowerCase(), searchValue)
-    }))
-    .sort((a,b) => b.score - a.score)
-    .filter(f => f.name.toLowerCase().includes(searchValue));
+    .map((f, i) => ({name: f, index: i}))
+    .filter(f => f.name.toLowerCase().includes(searchValue))
+    .sort((a, b) => a.name.indexOf(searchValue) - b.name.indexOf(searchValue));
 
-  filtered.forEach((f, i) => {
+  filtered.forEach(f => {
     let div = document.createElement("div");
     div.className = "card";
+    div.onclick = () => openFolder(f.name);
+
     div.innerHTML = `
-      <span onclick="openFolder('${f.name}')">${f.name}</span>
-      <button onclick="deleteFolder(${folders.indexOf(f.name)})">❌</button>
+      ${f.name}
+      <button onclick="event.stopPropagation();deleteFolder(${f.index})">❌</button>
     `;
+
     container.appendChild(div);
   });
 
   localStorage.setItem("folders", JSON.stringify(folders));
 }
 
-/* ✨ SIMPLE MATCH SCORE */
-function similarity(a, b) {
-  let score = 0;
-  for (let i = 0; i < b.length; i++) {
-    if (a.includes(b[i])) score++;
-  }
-  return score;
-}
-
-/* ➕ ADD */
 function addFolder() {
   let name = prompt("Folder name:");
   if (name) {
@@ -181,15 +170,25 @@ function addFolder() {
   }
 }
 
-/* ❌ DELETE */
 function deleteFolder(i) {
   folders.splice(i, 1);
   render();
 }
 
-/* 📂 OPEN */
+/* OPEN FOLDER (NEW FEATURE) */
 function openFolder(name) {
-  alert("داخل فولدر: " + name + "\n(مرحله بعدی: ساخت صفحه داخل فولدر)");
+  let data = JSON.parse(localStorage.getItem(name)) || [];
+
+  let username = prompt("Username:");
+  let password = prompt("Password:");
+  let note = prompt("Note:");
+  let key = prompt("Key Phrase:");
+
+  data.push({username, password, note, key});
+
+  localStorage.setItem(name, JSON.stringify(data));
+
+  alert("Saved inside " + name);
 }
 
 render();
